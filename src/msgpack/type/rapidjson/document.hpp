@@ -26,7 +26,7 @@ namespace msgpack {
 			{
 				rapidjson::GenericDocument<Encoding, Allocator, StackAllocator> element(&v.GetAllocator());
 				ptr->convert(&element);
-				v.PushBack(element, v.GetAllocator());
+				v.PushBack(static_cast<rapidjson::GenericValue<Encoding, Allocator>&>(element), v.GetAllocator());
 			}
 		}
 			break;
