@@ -7,8 +7,8 @@
 namespace msgpack {
 
 
-	template <typename Encoding, typename Allocator>
-	inline rapidjson::GenericValue<Encoding, Allocator>& operator>> (object o, rapidjson::GenericValue<Encoding, Allocator>& v)
+	template <typename Encoding, typename Allocator, typename StackAllocator>
+	inline rapidjson::GenericDocument<Encoding, Allocator, StackAllocator>& operator>> (object& o, rapidjson::GenericDocument<Encoding, Allocator, StackAllocator>& v)
 	{
 		switch (o.type)
 		{
@@ -19,13 +19,14 @@ namespace msgpack {
 		case msgpack::type::RAW: v.SetString(o.via.raw.ptr, o.via.raw.size); break;
 		case msgpack::type::ARRAY:{
 			v.SetArray();
+			v.Reserve(o.via.array.size, v.GetAllocator())
 			msgpack::object* ptr = o.via.array.ptr;
 			msgpack::object* END = ptr + o.via.array.size;
 			for (; ptr < END; ++ptr)
 			{
-				rapidjson::GenericValue<Encoding, Allocator> element;
+				rapidjson::GenericDocument<Encoding, Allocator, StackAllocator> element(v.GetAllocator());
 				ptr->convert(&element);
-				v.PushBack(element, Allocator());
+				v.PushBack(element, v.GetAllocator());
 			}
 		}
 			break;
@@ -35,11 +36,14 @@ namespace msgpack {
 			msgpack::object_kv* END = ptr + o.via.map.size;
 			for (; ptr < END; ++ptr)
 			{
-				rapidjson::GenericValue<Encoding, Allocator>::StringRefType key(ptr->key.via.raw.ptr, ptr->key.via.raw.size);
-				rapidjson::GenericValue<Encoding, Allocator> val;
+				rapidjson::GenericDocument<Encoding, Allocator, StackAllocator>::StringRefType key(ptr->key.via.raw.ptr, ptr->key.via.raw.size);
+				// Or should i use std::string key(ptr->key.via.raw.ptr, ptr->key.via.raw.size);
+				// to make a local copy?
+
+				rapidjson::GenericDocument<Encoding, Allocator, StackAllocator> val(v.GetAllocator());
 				ptr->val.convert(&val);
 
-				v.AddMember(key, val, Allocator());
+				v.AddMember(key, val, v.GetAllocator());
 			}
 		}
 			break;
@@ -48,7 +52,15 @@ namespace msgpack {
 			v.SetNull(); break;
 
 		}
-		return v;
+		return v = d;
+	}
+
+	template <typename Encoding, typename Allocator>
+	inline rapidjson::GenericValue<Encoding, Allocator>& operator>> (object o, rapidjson::GenericValue<Encoding, Allocator>& v)
+	{
+		rapidjson::GenericDocument<Encoding, Allocator> d;
+		o >> d;
+		return v = d;
 	}
 
 	template <typename Stream, typename Encoding, typename Allocator>
@@ -97,6 +109,13 @@ namespace msgpack {
 			}
 			return o;
 		}
+		return o;
+	}
+
+	template <typename Stream, typename Encoding, typename Allocator>
+	inline packer<Stream>& operator<< (packer<Stream>& o, const rapidjson::GenericDocument<Encoding, Allocator>& v)
+	{
+		o << static_cast<const rapidjson::GenericValue<Encoding, Allocator>&>(v);
 		return o;
 	}
 
@@ -191,22 +210,9 @@ namespace msgpack {
 		}
 	}
 
-	template <typename Encoding, typename Allocator>
-	inline rapidjson::GenericDocument<Encoding, Allocator>& operator>> (object o, rapidjson::GenericDocument<Encoding, Allocator>& v)
-	{
-		o >> static_cast<rapidjson::GenericValue<Encoding, Allocator>&>(v);
-		return v;
-	}
 
-	template <typename Stream, typename Encoding, typename Allocator>
-	inline packer<Stream>& operator<< (packer<Stream>& o, const rapidjson::GenericDocument<Encoding, Allocator>& v)
-	{
-		o << static_cast<const rapidjson::GenericValue<Encoding, Allocator>&>(v);
-		return o;
-	}
-
-	template <typename Encoding, typename Allocator>
-	inline void operator<< (object::with_zone& o, rapidjson::GenericDocument<Encoding, Allocator>& v)
+	template <typename Encoding, typename Allocator, typename StackAllocator>
+	inline void operator<< (object::with_zone& o, rapidjson::GenericDocument<Encoding, Allocator, StackAllocator>& v)
 	{
 		o << static_cast<rapidjson::GenericValue<Encoding, Allocator>&>(v);
 	}

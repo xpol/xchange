@@ -36,7 +36,7 @@ bool write_file_contents(const std::string& filename, const std::string& content
 	return true;
 }
 
-bool mpack_to_rapidjson(const std::string& file)
+bool msgpack_to_rapidjson(const std::string& file)
 {
 	std::string contents;
 	if (!read_file_contents(file, &contents))
@@ -57,7 +57,7 @@ bool mpack_to_rapidjson(const std::string& file)
 }
 
 
-bool mpack_to_jsoncpp(const std::string& file)
+bool msgpack_to_jsoncpp(const std::string& file)
 {
 	std::string contents;
 	if (!read_file_contents(file, &contents))
@@ -110,14 +110,14 @@ bool rapidjson_to_msgpack(const std::string &filename)
 	if (!write_file_contents(mpfile, std::string(sbuf.data(), sbuf.size())))
 		return false;
 
-	return true;
+	return msgpack_to_rapidjson(mpfile);
 }
 
 
 int main(int argc, char* argv[])
 {
 	if (argc >= 2)
-		jsoncpp_to_msgpack(argv[1]);
+		rapidjson_to_msgpack(argv[1]);
 	return 0;
 }
 
