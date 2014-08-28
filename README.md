@@ -26,10 +26,13 @@ Current status
 
 From \ To      | msgpack-c   | jsoncpp             | RapidJSON
 ---------------|-------------|---------------------|------------
-**msgpack-c**  | \-          | Done                | Blocked
-**jsoncpp**    | Done        | \-                  | Blocked
+**msgpack-c**  | \-          | Done                | Done
+**jsoncpp**    | Done        | \-                  | Done(via msgpack-c)
 **RapidJSON**  | Done        | Done(via msgpack-c) | \-
 
-*The convert to RapidJSON is blocked because the `rapidjson::Value.AddMember()` [requires an allocator](https://github.com/xpol/xchange/blob/master/src/msgpack/type/rapidjson/document.hpp#L42)
-which is neither supported by msgpack-c nor RapidJSON.*
+Special Thanks
+--------------
+
+* @miloyip
+* @pah
 
