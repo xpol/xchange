@@ -8,7 +8,7 @@ namespace msgpack {
 
 
 	template <typename Encoding, typename Allocator, typename StackAllocator>
-	inline rapidjson::GenericDocument<Encoding, Allocator, StackAllocator>& operator>> (object& o, rapidjson::GenericDocument<Encoding, Allocator, StackAllocator>& v)
+	inline rapidjson::GenericDocument<Encoding, Allocator, StackAllocator>& operator>> (const object& o, rapidjson::GenericDocument<Encoding, Allocator, StackAllocator>& v)
 	{
 		switch (o.type)
 		{
@@ -19,12 +19,12 @@ namespace msgpack {
 		case msgpack::type::RAW: v.SetString(o.via.raw.ptr, o.via.raw.size); break;
 		case msgpack::type::ARRAY:{
 			v.SetArray();
-			v.Reserve(o.via.array.size, v.GetAllocator())
+			v.Reserve(o.via.array.size, v.GetAllocator());
 			msgpack::object* ptr = o.via.array.ptr;
 			msgpack::object* END = ptr + o.via.array.size;
 			for (; ptr < END; ++ptr)
 			{
-				rapidjson::GenericDocument<Encoding, Allocator, StackAllocator> element(v.GetAllocator());
+				rapidjson::GenericDocument<Encoding, Allocator, StackAllocator> element(&v.GetAllocator());
 				ptr->convert(&element);
 				v.PushBack(element, v.GetAllocator());
 			}
@@ -36,14 +36,11 @@ namespace msgpack {
 			msgpack::object_kv* END = ptr + o.via.map.size;
 			for (; ptr < END; ++ptr)
 			{
-				rapidjson::GenericDocument<Encoding, Allocator, StackAllocator>::StringRefType key(ptr->key.via.raw.ptr, ptr->key.via.raw.size);
-				// Or should i use std::string key(ptr->key.via.raw.ptr, ptr->key.via.raw.size);
-				// to make a local copy?
-
-				rapidjson::GenericDocument<Encoding, Allocator, StackAllocator> val(v.GetAllocator());
+                rapidjson::GenericValue<Encoding, Allocator> key(ptr->key.via.raw.ptr, ptr->key.via.raw.size, v.GetAllocator());
+				rapidjson::GenericDocument<Encoding, Allocator, StackAllocator> val(&v.GetAllocator());
 				ptr->val.convert(&val);
 
-				v.AddMember(key, val, v.GetAllocator());
+                v.AddMember(key, val, v.GetAllocator());
 			}
 		}
 			break;
@@ -52,11 +49,11 @@ namespace msgpack {
 			v.SetNull(); break;
 
 		}
-		return v = d;
+		return v;
 	}
 
 	template <typename Encoding, typename Allocator>
-	inline rapidjson::GenericValue<Encoding, Allocator>& operator>> (object o, rapidjson::GenericValue<Encoding, Allocator>& v)
+	inline rapidjson::GenericValue<Encoding, Allocator>& operator>> (const object& o, rapidjson::GenericValue<Encoding, Allocator>& v)
 	{
 		rapidjson::GenericDocument<Encoding, Allocator> d;
 		o >> d;
@@ -68,7 +65,7 @@ namespace msgpack {
 	{
 		if (v.IsNull())
 			return o.pack_nil();
-		
+
 		if (v.IsTrue())
 			return o.pack_true();
 
@@ -91,7 +88,7 @@ namespace msgpack {
 		if (v.IsArray())
 		{
 			o.pack_array(v.Size());
-			rapidjson::GenericValue<Encoding, Allocator>::ConstValueIterator i = v.Begin(), END = v.End();
+			typename rapidjson::GenericValue<Encoding, Allocator>::ConstValueIterator i = v.Begin(), END = v.End();
 			for (;i < END; ++i)
 				o.pack(*i);
 			return o;
@@ -99,7 +96,7 @@ namespace msgpack {
 
 		if (v.IsObject())
 		{
-			rapidjson::GenericValue<Encoding, Allocator>::ConstMemberIterator i = v.MemberBegin(), END = v.MemberEnd();
+			typename rapidjson::GenericValue<Encoding, Allocator>::ConstMemberIterator i = v.MemberBegin(), END = v.MemberEnd();
 			size_t sz = END - i;
 			o.pack_map(sz);
 			for (; i != END; ++i)
@@ -177,7 +174,7 @@ namespace msgpack {
 				object* const pend = p + v.Size();
 				o.via.array.ptr = p;
 				o.via.array.size = v.Size();
-				rapidjson::GenericValue<Encoding, Allocator>::ConstValueIterator it(v.Begin());
+				typename rapidjson::GenericValue<Encoding, Allocator>::ConstValueIterator it(v.Begin());
 				do {
 					*p = object(*it, o.zone);
 					++p;
@@ -199,7 +196,7 @@ namespace msgpack {
 				object_kv* const pend = p + sz;
 				o.via.map.ptr = p;
 				o.via.map.size = sz;
-				rapidjson::GenericValue<Encoding, Allocator>::ConstMemberIterator it(v.MemberBegin());
+				typename rapidjson::GenericValue<Encoding, Allocator>::ConstMemberIterator it(v.MemberBegin());
 				do {
 					p->key = object(it->name, o.zone);
 					p->val = object(it->value, o.zone);
@@ -220,4 +217,3 @@ namespace msgpack {
 
 
 #endif /* msgpack/type/rapidjson/document.hpp */
-
