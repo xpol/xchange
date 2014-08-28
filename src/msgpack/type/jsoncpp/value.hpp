@@ -6,7 +6,7 @@
 
 namespace msgpack {
 
-	inline Json::Value& operator>> (object o, Json::Value& v)
+	inline Json::Value& operator>> (const object& o, Json::Value& v)
 	{
 		switch (o.type)
 		{
