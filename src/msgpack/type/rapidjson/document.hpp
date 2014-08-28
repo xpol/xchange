@@ -1,8 +1,7 @@
 #ifndef MSGPACK_TYPE_RAPIDJSON_DOCUMENT_HPP__
 #define MSGPACK_TYPE_RAPIDJSON_DOCUMENT_HPP__
 
-#include "msgpack/object.hpp"
-
+#include <msgpack/object.hpp>
 #include <rapidjson/document.h>
 
 namespace msgpack {
@@ -36,8 +35,8 @@ namespace msgpack {
 			msgpack::object_kv* END = ptr + o.via.map.size;
 			for (; ptr < END; ++ptr)
 			{
-				rapidjson::GenericValue<Encoding, Allocator> key, val;
-				ptr->key.convert(&key);
+				rapidjson::GenericValue<Encoding, Allocator>::StringRefType key(ptr->key.via.raw.ptr, ptr->key.via.raw.size);
+				rapidjson::GenericValue<Encoding, Allocator> val;
 				ptr->val.convert(&val);
 
 				v.AddMember(key, val, Allocator());
@@ -91,10 +90,9 @@ namespace msgpack {
 			rapidjson::GenericValue<Encoding, Allocator>::ConstMemberIterator i = v.MemberBegin(), END = v.MemberEnd();
 			size_t sz = END - i;
 			o.pack_map(sz);
-			i = v.MemberBegin();
-			for (; i < END; ++i)
+			for (; i != END; ++i)
 			{
-				o.pack(i->name);
+				o.pack_raw(i->name.GetStringLength()).pack_raw_body(i->name.GetString(), i->name.GetStringLength());
 				o.pack(i->value);
 			}
 			return o;
@@ -141,8 +139,12 @@ namespace msgpack {
 		else if (v.IsString())
 		{
 			o.type = type::RAW;
-			o.via.raw.ptr = v.GetString();
-			o.via.raw.size = v.GetStringLength();
+			std::string s(v.GetString(), v.GetStringLength());
+
+			char* ptr = (char*)o.zone->malloc(s.size());
+			o.via.raw.ptr = ptr;
+			o.via.raw.size = (uint32_t)s.size();
+			memcpy(ptr, s.data(), s.size());
 		}
 		else if (v.IsArray())
 		{
@@ -187,6 +189,26 @@ namespace msgpack {
 				} while (p < pend);
 			}
 		}
+	}
+
+	template <typename Encoding, typename Allocator>
+	inline rapidjson::GenericDocument<Encoding, Allocator>& operator>> (object o, rapidjson::GenericDocument<Encoding, Allocator>& v)
+	{
+		o >> static_cast<rapidjson::GenericValue<Encoding, Allocator>&>(v);
+		return v;
+	}
+
+	template <typename Stream, typename Encoding, typename Allocator>
+	inline packer<Stream>& operator<< (packer<Stream>& o, const rapidjson::GenericDocument<Encoding, Allocator>& v)
+	{
+		o << static_cast<const rapidjson::GenericValue<Encoding, Allocator>&>(v);
+		return o;
+	}
+
+	template <typename Encoding, typename Allocator>
+	inline void operator<< (object::with_zone& o, rapidjson::GenericDocument<Encoding, Allocator>& v)
+	{
+		o << static_cast<rapidjson::GenericValue<Encoding, Allocator>&>(v);
 	}
 }
 
