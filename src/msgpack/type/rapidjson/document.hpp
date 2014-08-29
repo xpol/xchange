@@ -73,9 +73,8 @@ namespace msgpack {
                 return o.pack_true();
             case rapidjson::kObjectType:
             {
+                o.pack_map(v.MemberCount());
                 typename rapidjson::GenericValue<Encoding, Allocator>::ConstMemberIterator i = v.MemberBegin(), END = v.MemberEnd();
-                size_t sz = END - i;
-                o.pack_map(sz);
                 for (; i != END; ++i)
                 {
                     o.pack_raw(i->name.GetStringLength()).pack_raw_body(i->name.GetString(), i->name.GetStringLength());
@@ -135,12 +134,12 @@ namespace msgpack {
             case rapidjson::kObjectType:
             {
                 o.type = type::MAP;
-                size_t sz = v.MemberEnd() - v.MemberBegin();
-                if (sz == 0) {
+                if (v.ObjectEmpty()) {
                     o.via.map.ptr = NULL;
                     o.via.map.size = 0;
                 }
                 else {
+                    size_t sz = v.MemberCount();
                     object_kv* p = (object_kv*)o.zone->malloc(sizeof(object_kv)*sz);
                     object_kv* const pend = p + sz;
                     o.via.map.ptr = p;
