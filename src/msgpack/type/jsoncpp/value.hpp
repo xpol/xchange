@@ -11,8 +11,8 @@ namespace msgpack {
 		switch (o.type)
 		{
 		case msgpack::type::BOOLEAN: v = o.via.boolean; break;;
-		case msgpack::type::POSITIVE_INTEGER: v = o.via.u64; break;
-		case msgpack::type::NEGATIVE_INTEGER: v = o.via.i64; break;
+        case msgpack::type::POSITIVE_INTEGER: v = static_cast<Json::UInt64>(o.via.u64); break;
+        case msgpack::type::NEGATIVE_INTEGER: v = static_cast<Json::Int64>(o.via.i64); break;
 		case msgpack::type::DOUBLE: v = o.via.dec; break;
 		case msgpack::type::RAW: v = Json::Value(o.via.raw.ptr, o.via.raw.ptr+o.via.raw.size); break;
 		case msgpack::type::ARRAY:{

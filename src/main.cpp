@@ -129,20 +129,20 @@ private:
 
 bool read_file_contents(const std::string& filename, std::string* contents)
 {
-	std::ifstream in(filename, std::ios::in | std::ios::binary);
+	std::ifstream in(filename.data(), std::ios::in | std::ios::binary);
 	if (in.bad())
 		return false;
 
 	in.seekg(0, std::ios::end);
 	contents->resize(static_cast<size_t>(in.tellg()));
 	in.seekg(0, std::ios::beg);
-	in.read(&contents->front(), contents->size());
+	in.read(&(*contents)[0], contents->size());
 	in.close();
 	return true;
 }
 bool write_file_contents(const std::string& filename, const std::string& contents)
 {
-	std::ofstream of(filename, std::ios::out | std::ios::binary);
+	std::ofstream of(filename.data(), std::ios::out | std::ios::binary);
 	if (of.bad())
 		return false;
 	of.write(contents.data(), contents.size());
@@ -185,7 +185,7 @@ struct Jsoncpp {
     static bool load(Json::Value& doc, const std::string& filename)
     {
         Json::Reader reader;
-        std::ifstream in(filename, std::ios::in | std::ios::binary);
+        std::ifstream in(filename.data(), std::ios::in | std::ios::binary);
         reader.parse(in, doc);
         return true;
     }
@@ -194,7 +194,7 @@ struct Jsoncpp {
         Json::Value doc;
 
         sdoc.unpacked.get().convert(&doc);
-        std::ofstream of(filename, std::ios::out | std::ios::binary);
+        std::ofstream of(filename.data(), std::ios::out | std::ios::binary);
         of << doc;
         return true;
     }
