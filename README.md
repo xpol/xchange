@@ -1,6 +1,8 @@
 xchange
 =======
 
+[![Build Status](https://travis-ci.org/xpol/xchange.png)](https://travis-ci.org/xpol/xchange)
+
 This is a simple project that build a bridge between:
 
 * [msgpack-c](https://github.com/msgpack/msgpack-c)

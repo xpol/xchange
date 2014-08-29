@@ -1,0 +1,9 @@
+language: c
+compiler:
+  - gcc
+  - clang
+before_script:
+  - sudo apt-get install libfreeimage-dev
+script: 
+  - cmake -G "Unix Makefiles" -H. -Bbuild
+  - cmake --build build --target xchange --config Release
