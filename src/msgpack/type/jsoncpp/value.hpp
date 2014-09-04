@@ -11,8 +11,8 @@ namespace msgpack {
 		switch (o.type)
 		{
 		case msgpack::type::BOOLEAN: v = o.via.boolean; break;;
-        case msgpack::type::POSITIVE_INTEGER: v = static_cast<Json::UInt64>(o.via.u64); break;
-        case msgpack::type::NEGATIVE_INTEGER: v = static_cast<Json::Int64>(o.via.i64); break;
+		case msgpack::type::POSITIVE_INTEGER: v = static_cast<Json::UInt64>(o.via.u64); break;
+		case msgpack::type::NEGATIVE_INTEGER: v = static_cast<Json::Int64>(o.via.i64); break;
 		case msgpack::type::DOUBLE: v = o.via.dec; break;
 		case msgpack::type::RAW: v = Json::Value(o.via.raw.ptr, o.via.raw.ptr+o.via.raw.size); break;
 		case msgpack::type::ARRAY:{
@@ -47,39 +47,26 @@ namespace msgpack {
 	template <typename Stream>
 	inline packer<Stream>& operator<< (packer<Stream>& o, const Json::Value& v)
 	{
-		if (v.isNull())
-			return o.pack_nil();
-		
-		if (v.isBool())
-			return v.asBool() ? o.pack_true() : o.pack_false();
-
-		if (v.isInt())
-			return o.pack_int(v.asInt());
-		if (v.isUInt())
-			return o.pack_unsigned_int(v.asUInt());
-		if (v.isInt64())
-			return o.pack_int64(v.asUInt64());
-		if (v.isUInt64())
-			return o.pack_uint64(v.asUInt64());
-		if (v.isDouble())
-			return o.pack_double(v.asDouble());
-		if (v.isString())
+		switch (v.type())
 		{
+		default:
+		case Json::nullValue: return o.pack_nil();
+		case Json::intValue:  return o.pack_int64(v.asInt64());
+		case Json::uintValue: return o.pack_uint64(v.asUInt64());
+		case Json::realValue: return o.pack_double(v.asDouble());
+		case Json::stringValue:{
 			std::string s(v.asString());
 			return o.pack_raw(s.size()).pack_raw_body(s.data(), s.size());
 		}
-
-		if (v.isArray())
-		{
+		case Json::booleanValue:return v.asBool() ? o.pack_true() : o.pack_false();
+		case Json::arrayValue: {
 			o.pack_array(v.size());
 			Json::Value::const_iterator i = v.begin(), END = v.end();
-			for (;i != END; ++i)
+			for (; i != END; ++i)
 				o.pack(*i);
 			return o;
 		}
-
-		if (v.isObject())
-		{
+		case Json::objectValue:{
 			o.pack_map(v.size());
 
 			Json::Value::const_iterator i = v.begin(), END = v.end();
@@ -90,46 +77,30 @@ namespace msgpack {
 			}
 			return o;
 		}
-		return o;
+		}
 	}
 
 	inline void operator<< (object::with_zone& o, const Json::Value& v)
 	{
-		if (v.isNull())
+		switch (v.type())
+		{
+		default:
+		case Json::nullValue:
 			o.type = type::NIL;
-
-		else if (v.isBool())
-		{
-			o.type = type::BOOLEAN;
-			o.via.boolean = v.asBool();
-		}
-		else if (v.isInt())
-		{
-			o.type = type::NEGATIVE_INTEGER;
-			o.via.i64 = v.asInt();
-		}
-		else if (v.isUInt())
-		{
-			o.type = type::POSITIVE_INTEGER;
-			o.via.u64 = v.asUInt();
-		}
-		else if (v.isInt64())
-		{
+			break;
+		case Json::intValue:
 			o.type = type::NEGATIVE_INTEGER;
 			o.via.i64 = v.asInt64();
-		}
-		else if (v.isUInt64())
-		{
+			break;
+		case Json::uintValue:
 			o.type = type::POSITIVE_INTEGER;
 			o.via.u64 = v.asUInt64();
-		}
-		else if (v.isDouble())
-		{
+			break;
+		case Json::realValue:
 			o.type = type::DOUBLE;
 			o.via.dec = v.asDouble();
-		}
-		else if (v.isString())
-		{
+			break;
+		case Json::stringValue:		{
 			o.type = type::RAW;
 			std::string s(v.asString());
 
@@ -137,9 +108,13 @@ namespace msgpack {
 			o.via.raw.ptr = ptr;
 			o.via.raw.size = (uint32_t)s.size();
 			memcpy(ptr, s.data(), s.size());
+			break;
 		}
-		else if (v.isArray())
-		{
+		case Json::booleanValue:
+			o.type = type::BOOLEAN;
+			o.via.boolean = v.asBool();
+			break;
+		case Json::arrayValue:{
 			o.type = type::ARRAY;
 			if (v.empty()) {
 				o.via.array.ptr = NULL;
@@ -159,9 +134,7 @@ namespace msgpack {
 				} while (p < pend);
 			}
 		}
-
-		else if (v.isObject())
-		{
+		case Json::objectValue:{
 			o.type = type::MAP;
 			if (v.empty()) {
 				o.via.map.ptr = NULL;
@@ -181,6 +154,8 @@ namespace msgpack {
 					++it;
 				} while (p < pend);
 			}
+			break;
+		}
 		}
 	}
 }
