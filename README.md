@@ -7,7 +7,7 @@ This is a simple project that build a bridge between:
 
 * [msgpack-c](https://github.com/msgpack/msgpack-c)
 * [jsoncpp](https://github.com/open-source-parsers/jsoncpp)
-* [RapidJSON](https://github.com/open-source-parsers/jsoncpp).
+* [RapidJSON](https://github.com/miloyip/rapidjson).
 
 Source Code
 -----------
