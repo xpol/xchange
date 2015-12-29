@@ -10,8 +10,8 @@
 
 #include <msgpack.hpp>
 
-#include "msgpack/type/rapidjson/document.hpp"
-#include "msgpack/type/jsoncpp/value.hpp"
+#include "msgpack/type/rapidjson.hpp"
+#include "msgpack/type/jsoncpp.hpp"
 
 using namespace rapidjson;
 using namespace msgpack;
@@ -102,7 +102,7 @@ private:
         if (!rv)
             std::cerr << "Unsupported extension:" << filename << std::endl;
         return rv;
-        
+
     }
     static std::string extension(const std::string& filename)
     {
@@ -248,4 +248,3 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-

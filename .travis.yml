@@ -1,7 +1,7 @@
-language: c
+language: c++
 compiler:
   - gcc
   - clang
-script: 
+script:
   - cmake -G "Unix Makefiles" -H. -Bbuild
   - cmake --build build --target xchange --config Release
