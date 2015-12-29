@@ -4,6 +4,9 @@ project(xchange)
 set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Turn off JsonCpp tests")
 set(MSGPACK_CXX11 ON CACHE BOOL "Turn on C++11 for msgpack")
 set(MSGPACK_BUILD_EXAMPLES OFF CACHE BOOL "Turn off msgpack examples")
+set(MSGPACK_BUILD_TESTS OFF CACHE BOOL "Turn off msgpack tests")
+set(MSGPACK_ENABLE_SHARED OFF CACHE BOOL "Turn off msgpack shared library")
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -26,7 +29,11 @@ list(APPEND SOURCES
 	src/msgpack/type/jsoncpp.hpp
 )
 
-add_definitions(-std=c++11 -Wno-error=unused-command-line-argument)
+add_definitions(-std=c++11)
+
+if (CMAKE_CXX_COMPILER_ID EQUAL "Clang")
+	add_definitions(-Qunused-arguments)
+endif()
 
 add_executable(xchange ${SOURCES})
 
