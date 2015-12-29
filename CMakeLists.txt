@@ -26,7 +26,7 @@ list(APPEND SOURCES
 	src/msgpack/type/jsoncpp.hpp
 )
 
-add_definitions(-std=c++11)
+add_definitions(-std=c++11 -Wno-error=unused-command-line-argument)
 
 add_executable(xchange ${SOURCES})
 
