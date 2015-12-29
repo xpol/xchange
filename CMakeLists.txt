@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 project(xchange)
 
 set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Turn off JsonCpp tests")
@@ -26,11 +26,11 @@ list(APPEND SOURCES
 	src/msgpack/type/jsoncpp.hpp
 )
 
+add_definitions(-std=c++11)
 
 add_executable(xchange ${SOURCES})
 
-target_link_libraries(xchange msgpack-static jsoncpp)
-target_compile_features(xchange PRIVATE cxx_override)
+target_link_libraries(xchange msgpack-static jsoncpp_lib_static)
 
 if (MSVC)
     set_property(TARGET xchange APPEND_STRING PROPERTY COMPILE_FLAGS "/wd4290")
