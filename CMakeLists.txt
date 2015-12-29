@@ -31,9 +31,6 @@ list(APPEND SOURCES
 
 add_definitions(-std=c++11)
 
-if (CMAKE_CXX_COMPILER_ID EQUAL "Clang")
-	add_definitions(-Qunused-arguments)
-endif()
 
 add_executable(xchange ${SOURCES})
 
