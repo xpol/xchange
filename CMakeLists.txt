@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 project(xchange)
 
 set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Turn off JsonCpp tests")
