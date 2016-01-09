@@ -13,8 +13,8 @@ Source Code
 -----------
 
 The `src/main.cpp` is a demo usage.
-The jsoncpp adapter for msgpack-c is `src/msgpack/type/jsoncpp/value.hpp`.
-The RapidJSON adapter for msgpack-c is `src/msgpack/type/rapidjson/document.hpp`.
+The jsoncpp adapter for msgpack-c is `src/msgpack/type/jsoncpp.hpp`.
+The RapidJSON adapter for msgpack-c is `src/msgpack/type/rapidjson.hpp`.
 
 Usage
 -----
@@ -37,4 +37,3 @@ Special Thanks
 
 * @miloyip
 * @pah
-
